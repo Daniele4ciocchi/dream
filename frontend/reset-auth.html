@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reset Auth</title>
+</head>
+<body>
+    <h1>Reset Autenticazione</h1>
+    <button onclick="resetAuth()">🧹 Cancella Token e Dati Utente</button>
+    <div id="result"></div>
+    
+    <script>
+        function resetAuth() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            document.getElementById('result').innerHTML = '✅ Token e dati utente cancellati! <br>Ora puoi fare un login fresco.';
+        }
+        
+        // Mostra stato attuale
+        const token = localStorage.getItem('token');
+        const user = localStorage.getItem('user');
+        document.getElementById('result').innerHTML = `
+            <h3>Stato Attuale:</h3>
+            <p>Token: ${token ? '✅ Presente' : '❌ Assente'}</p>
+            <p>User: ${user ? '✅ Presente' : '❌ Assente'}</p>
+        `;
+    </script>
+</body>
+</html>

@@ -34,38 +34,7 @@ def create_app(config_name=None):
     app.register_blueprint(auth_bp)
     app.register_blueprint(dreams_bp)
     
-    # JWT error handlers
-    @jwt.expired_token_loader
-    def expired_token_callback(jwt_header, jwt_payload):
-        return jsonify({'message': 'Token has expired'}), 401
-    
-    @jwt.invalid_token_loader
-    def invalid_token_callback(error):
-        return jsonify({'message': 'Invalid token'}), 401
-    
-    @jwt.unauthorized_loader
-    def missing_token_callback(error):
-        return jsonify({'message': 'Authorization token is required'}), 401
-    
-    @jwt.revoked_token_loader
-    def revoked_token_callback(jwt_header, jwt_payload):
-        return jsonify({'message': 'Token has been revoked'}), 401
-    
-    # Error handlers
-    @app.errorhandler(404)
-    def not_found(error):
-        return jsonify({'message': 'Endpoint not found'}), 404
-    
-    @app.errorhandler(405)
-    def method_not_allowed(error):
-        return jsonify({'message': 'Method not allowed'}), 405
-    
-    @app.errorhandler(500)
-    def internal_error(error):
-        db.session.rollback()
-        return jsonify({'message': 'Internal server error'}), 500
-    
-    # CORS error handler
+    # CORS headers
     @app.after_request
     def after_request(response):
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
@@ -75,24 +44,7 @@ def create_app(config_name=None):
     # Health check endpoint
     @app.route('/api/health', methods=['GET'])
     def health_check():
-        return jsonify({
-            'status': 'healthy',
-            'service': 'Dream Keeper API',
-            'version': '1.0.0'
-        }), 200
-    
-    # Root endpoint
-    @app.route('/', methods=['GET'])
-    def root():
-        return jsonify({
-            'message': 'Welcome to Dream Keeper API',
-            'version': '1.0.0',
-            'endpoints': {
-                'auth': '/api/auth',
-                'dreams': '/api/dreams',
-                'health': '/api/health'
-            }
-        }), 200
+        return jsonify({'status': 'healthy'}), 200
     
     # Create tables
     with app.app_context():
@@ -102,8 +54,3 @@ def create_app(config_name=None):
             print(f"Error creating tables: {e}")
     
     return app
-
-
-if __name__ == '__main__':
-    app = create_app()
-    app.run(debug=True)

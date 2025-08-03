@@ -1,14 +1,14 @@
 """
-Dreams routes for CRUD operations on user dreams
+Dreams routes for CRUD operations on user dreams - VERSIONE SEMPLICE
 """
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from marshmallow import ValidationError
 from datetime import datetime, date
 
-from project.models import Dream
+from project.models import Dream, User
 from project.schemas import dream_schema, dreams_schema, dream_update_schema
-from project.utils.security import get_current_user, rate_limit_check
+from project.utils.security import rate_limit_check
 from project import db
 
 dreams_bp = Blueprint('dreams', __name__, url_prefix='/api/dreams')
@@ -19,8 +19,10 @@ dreams_bp = Blueprint('dreams', __name__, url_prefix='/api/dreams')
 def create_dream():
     """Create a new dream."""
     try:
-        # Rate limiting
-        current_user = get_current_user()
+        # Flask-JWT-Extended fa tutto automaticamente!
+        user_id = int(get_jwt_identity())
+        current_user = User.find_by_id(user_id)
+        
         if not current_user:
             return jsonify({'message': 'User not found'}), 404
         
@@ -64,7 +66,10 @@ def create_dream():
 def get_user_dreams():
     """Get all dreams for the current user."""
     try:
-        current_user = get_current_user()
+        # Flask-JWT-Extended fa tutto automaticamente!
+        user_id = int(get_jwt_identity())
+        current_user = User.find_by_id(user_id)
+        
         if not current_user:
             return jsonify({'message': 'User not found'}), 404
         
@@ -115,7 +120,9 @@ def get_user_dreams():
 def get_dream(dream_id):
     """Get a specific dream."""
     try:
-        current_user = get_current_user()
+        user_id = int(get_jwt_identity())
+        current_user = User.find_by_id(user_id)
+        
         if not current_user:
             return jsonify({'message': 'User not found'}), 404
         
@@ -140,7 +147,9 @@ def get_dream(dream_id):
 def update_dream(dream_id):
     """Update a specific dream."""
     try:
-        current_user = get_current_user()
+        user_id = int(get_jwt_identity())
+        current_user = User.find_by_id(user_id)
+        
         if not current_user:
             return jsonify({'message': 'User not found'}), 404
         
@@ -194,7 +203,9 @@ def update_dream(dream_id):
 def delete_dream(dream_id):
     """Delete a specific dream."""
     try:
-        current_user = get_current_user()
+        user_id = int(get_jwt_identity())
+        current_user = User.find_by_id(user_id)
+        
         if not current_user:
             return jsonify({'message': 'User not found'}), 404
         
@@ -222,7 +233,9 @@ def delete_dream(dream_id):
 def search_dreams():
     """Search dreams by keyword."""
     try:
-        current_user = get_current_user()
+        user_id = int(get_jwt_identity())
+        current_user = User.find_by_id(user_id)
+        
         if not current_user:
             return jsonify({'message': 'User not found'}), 404
         
@@ -250,7 +263,9 @@ def search_dreams():
 def get_dream_stats():
     """Get statistics about user's dreams."""
     try:
-        current_user = get_current_user()
+        user_id = int(get_jwt_identity())
+        current_user = User.find_by_id(user_id)
+        
         if not current_user:
             return jsonify({'message': 'User not found'}), 404
         

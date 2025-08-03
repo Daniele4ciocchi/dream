@@ -6,11 +6,11 @@ load_dotenv()
 
 class Config:
     """Base configuration class."""
-    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+    SECRET_KEY = os.getenv('SECRET_KEY', 'my_super_secret_key_2024')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'jwt-secret-key-change-in-production')
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600)))
-    CORS_ORIGINS = os.getenv('CORS_ORIGINS', 'http://localhost:5173').split(',')
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'my_super_secret_key_2024')
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=86400)  # 24 ore
+    CORS_ORIGINS = ['http://localhost:5173', 'http://localhost:3000']
 
 class DevelopmentConfig(Config):
     """Development configuration."""

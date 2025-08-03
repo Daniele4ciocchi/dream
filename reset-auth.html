@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reset Auth - DreamKeeper</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; }
+        .reset { background: #e74c3c; color: white; border: none; border-radius: 5px; }
+        .status { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .success { color: #27ae60; }
+        .error { color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <h1>🧹 Reset Autenticazione DreamKeeper</h1>
+    
+    <div class="status" id="status">
+        <h3>Stato Attuale:</h3>
+        <div id="current-status"></div>
+    </div>
+    
+    <button class="reset" onclick="resetAuth()">🗑️ Cancella TUTTO (Token + Dati Utente)</button>
+    
+    <div id="result"></div>
+    
+    <hr>
+    <h3>📋 Istruzioni per il test:</h3>
+    <ol>
+        <li><strong>Clicca "Cancella TUTTO"</strong></li>
+        <li><strong>Vai su <a href="http://localhost:5173/register" target="_blank">http://localhost:5173/register</a></strong></li>
+        <li><strong>Registra un nuovo utente</strong> (es: email@test.com, password123)</li>
+        <li><strong>Dopo la registrazione dovresti essere loggato automaticamente</strong></li>
+        <li><strong>Vai su <a href="http://localhost:5173/profile" target="_blank">http://localhost:5173/profile</a></strong></li>
+        <li><strong>Ora dovresti vedere i dati reali dell'utente</strong></li>
+    </ol>
+    
+    <script>
+        function checkStatus() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            let html = '';
+            html += `<p><strong>Token:</strong> ${token ? '✅ Presente (' + token.substring(0, 50) + '...)' : '❌ Assente'}</p>`;
+            html += `<p><strong>Dati Utente:</strong> ${user ? '✅ Presenti' : '❌ Assenti'}</p>`;
+            
+            if (user) {
+                try {
+                    const userData = JSON.parse(user);
+                    html += `<p><strong>Username:</strong> ${userData.username || 'N/A'}</p>`;
+                    html += `<p><strong>Email:</strong> ${userData.email || 'N/A'}</p>`;
+                } catch (e) {
+                    html += `<p class="error">❌ Errore parsing dati utente</p>`;
+                }
+            }
+            
+            document.getElementById('current-status').innerHTML = html;
+        }
+        
+        function resetAuth() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            
+            document.getElementById('result').innerHTML = `
+                <div class="status success">
+                    <h3>✅ Reset Completato!</h3>
+                    <p>Token e dati utente cancellati dal localStorage.</p>
+                    <p><strong>Ora puoi fare una registrazione/login fresca!</strong></p>
+                </div>
+            `;
+            
+            checkStatus();
+        }
+        
+        // Controllo iniziale
+        checkStatus();
+        
+        // Aggiorna ogni 2 secondi
+        setInterval(checkStatus, 2000);
+    </script>
+</body>
+</html>

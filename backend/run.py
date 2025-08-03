@@ -6,14 +6,19 @@ A secure Flask API for managing dream journal entries with user authentication.
 
 import os
 import sys
-from dotenv import load_dotenv
 
 # Add project directory to path
 project_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, project_dir)
 
-# Load environment variables
-load_dotenv()
+# Load environment variables (skip dotenv for now)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    print("⚠️  dotenv non disponibile, usando variabili di ambiente di default")
+    os.environ.setdefault('FLASK_ENV', 'development')
+    os.environ.setdefault('SECRET_KEY', 'dev-secret-key-change-in-production')
 
 from project.app import create_app
 
