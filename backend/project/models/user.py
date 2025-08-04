@@ -63,7 +63,45 @@ class User(db.Model):
         """Delete user from database."""
         db.session.delete(self)
         db.session.commit()
-    
+
+    def get_stats(self):
+        """Get user statistics."""
+        from datetime import datetime, timedelta
+        from sqlalchemy import func, extract
+        from .dream import Dream  # Import del modello Dream
+        
+        # Statistiche di base
+        total_dreams = len(self.dreams)
+        
+        # Sogni di questo mese
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+        dreams_this_month = db.session.query(func.count(Dream.id)).filter(
+            Dream.user_id == self.id,
+            extract('month', Dream.date_dreamed) == current_month,
+            extract('year', Dream.date_dreamed) == current_year
+        ).scalar() or 0
+        
+        # Sogni lucidi
+        lucid_dreams = db.session.query(func.count(Dream.id)).filter(
+            Dream.user_id == self.id,
+            Dream.is_lucid == True
+        ).scalar() or 0
+        
+        # Sogni degli ultimi 7 giorni
+        week_ago = datetime.now() - timedelta(days=7)
+        dreams_this_week = db.session.query(func.count(Dream.id)).filter(
+            Dream.user_id == self.id,
+            Dream.date_dreamed >= week_ago.date()
+        ).scalar() or 0
+        
+        return {
+            'total': total_dreams,
+            'thisMonth': dreams_this_month,
+            'thisWeek': dreams_this_week,
+            'lucid': lucid_dreams
+        }
+
     def to_dict(self):
         """Convert user to dictionary (without password)."""
         return {

@@ -97,7 +97,7 @@ const logout = () => {
   position: sticky;
   top: 0;
   z-index: 1000;
-  backdrop-filter: blur(10px);
+  /* backdrop-filter: blur(10px); */
   padding: 10px 0;
 }
 
@@ -114,7 +114,8 @@ const logout = () => {
 .nav-item {
   display: flex;
   align-items: center;
-  background-color: rgba(74, 46, 131, 0.2);
+  background-color: rgba(74, 46, 131, 0.5);
+  backdrop-filter: blur(10px);
   color: white;
   border: 2px solid rgba(74, 46, 131, 0.5);
   border-radius: 12px;

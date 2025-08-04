@@ -1,8 +1,9 @@
 import axios from 'axios'
+import config from '../config/index.js'
 
-// Client API semplice
+// Client API dinamico
 const api = axios.create({
-  baseURL: 'http://localhost:5000',
+  baseURL: config.API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

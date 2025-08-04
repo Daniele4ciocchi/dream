@@ -1,8 +1,12 @@
 import os
 from datetime import timedelta
-from dotenv import load_dotenv
 
-load_dotenv()
+# Carica dotenv solo se disponibile
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    print("⚠️  dotenv non disponibile, usando variabili di ambiente di sistema")
 
 class Config:
     """Base configuration class."""
@@ -10,7 +14,32 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'my_super_secret_key_2024')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=86400)  # 24 ore
-    CORS_ORIGINS = ['http://localhost:5173', 'http://localhost:3000']
+    
+    # CORS Origins - supporta localhost e rete locale dinamicamente
+    @staticmethod
+    def get_cors_origins():
+        """Genera dinamicamente gli origins CORS"""
+        base_origins = [
+            'http://localhost:5173',
+            'http://localhost:3000',
+            'http://127.0.0.1:5173',
+            'http://127.0.0.1:3000',
+        ]
+        
+        # Aggiungi URL da variabile d'ambiente
+        env_frontend = os.getenv('FRONTEND_URL')
+        if env_frontend and env_frontend not in base_origins:
+            base_origins.append(env_frontend)
+        
+        # Aggiungi origins da CORS_ORIGINS
+        env_cors = os.getenv('CORS_ORIGINS', '')
+        if env_cors:
+            cors_list = [origin.strip() for origin in env_cors.split(',') if origin.strip()]
+            for origin in cors_list:
+                if origin not in base_origins:
+                    base_origins.append(origin)
+        
+        return base_origins
 
 class DevelopmentConfig(Config):
     """Development configuration."""

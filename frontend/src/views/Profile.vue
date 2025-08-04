@@ -25,18 +25,7 @@
                             <label>📅 Membro dal</label>
                             <div class="info-value">{{ formatDate(user?.created_at) }}</div>
                         </div>
-                        <div class="info-item">
-                            <label>🔄 Ultimo aggiornamento</label>
-                            <div class="info-value">{{ formatDate(user?.updated_at) }}</div>
-                        </div>
-                        <div class="info-item">
-                            <label>✅ Stato Account</label>
-                            <div class="info-value">
-                                <span class="status-badge" :class="{ active: user?.is_active }">
-                                    {{ user?.is_active ? 'Attivo' : 'Non Attivo' }}
-                                </span>
-                            </div>
-                        </div>
+                        
                     </div>
                 </div>
 
@@ -48,12 +37,16 @@
                             <div class="stat-label">🌙 Sogni Salvati</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-number">{{ daysSinceJoined }}</div>
-                            <div class="stat-label">📆 Giorni con noi</div>
+                            <div class="stat-number">{{ thisMonth }}</div>
+                            <div class="stat-label">📆 Sogni ultimo mese</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-number">{{ averageDreamsPerWeek }}</div>
-                            <div class="stat-label">📈 Sogni/Settimana</div>
+                            <div class="stat-number">{{ thisWeek }}</div>
+                            <div class="stat-label">📈 Sogni ultima settimana</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">{{ lucid }}</div>
+                            <div class="stat-label">📈 Sogni lucidi</div>
                         </div>
                     </div>
                 </div>
@@ -106,9 +99,10 @@ export default {
         const showLogoutModal = ref(false)
 
         // Mock data per le statistiche (da sostituire con API reali)
-        const dreamCount = ref(42)
-        const daysSinceJoined = ref(0)
-        const averageDreamsPerWeek = ref(3.2)
+        const dreamCount = ref(0)
+        const thisMonth = ref(0)
+        const thisWeek = ref(0)
+        const lucid = ref(0)
 
         // Computed properties
         const user = computed(() => {
@@ -138,15 +132,6 @@ export default {
 
         const getUserData = async () => {
             try {
-                // Ottieni il token direttamente - se non c'è, la richiesta fallirà automaticamente
-                const token = authService.getToken()
-                console.log('Token trovato:', token ? 'SÌ' : 'NO')
-
-                if (!token) {
-                    console.log('Nessun token trovato, uso dati demo')
-                    return
-                }
-
                 console.log('Tentativo di chiamata API /me...')
 
                 // Chiamata API per ottenere i dati dell'utente
@@ -155,19 +140,35 @@ export default {
                 console.log('Dati ricevuti:', response.data)
 
                 if (response.data.user) {
-                    actions.updateUser(response.data.user)
+                    store.user = response.data.user
                     console.log('Dati utente aggiornati nello store')
                 }
             } catch (error) {
                 console.error('Errore nel recupero dei dati utente:', error);
-                console.error('Status:', error.response?.status);
-                console.error('Message:', error.response?.data?.message);
-
+                
                 // Se è un errore 401, l'utente non è più autenticato
                 if (error.response?.status === 401) {
                     console.log('Token scaduto o non valido, effettuo logout')
                     authLogout()
                 }
+            }
+        }
+
+        const getStats = async () => {
+            try {
+                console.log('Caricamento statistiche utente...')
+                const response = await api.get('api/auth/stats')
+                console.log('Statistiche ricevute:', response.data)
+
+                // Aggiorna le statistiche
+                dreamCount.value = response.data.total || 0
+                thisMonth.value = response.data.thisMonth || 0
+                thisWeek.value = response.data.thisWeek || 0
+                lucid.value = response.data.lucid || 0
+
+            } catch (error) {
+                console.error('Errore nel recupero delle statistiche:', error)
+                // In caso di errore, mantieni i valori di default (0)
             }
         }
 
@@ -181,13 +182,7 @@ export default {
             })
         }
 
-        const calculateDaysSinceJoined = () => {
-            if (!user.value?.created_at) return 0
-            const joinDate = new Date(user.value.created_at)
-            const today = new Date()
-            const diffTime = Math.abs(today - joinDate)
-            return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-        }
+
 
         const editProfile = () => {
             // TODO: Implementare modifica profilo
@@ -222,31 +217,25 @@ export default {
         onMounted(async () => {
             console.log('Profile.vue montato')
 
-            // Inizializza l'auth store dal localStorage
-            actions.initAuth()
-
-            // Attendi un tick per assicurarti che lo stato sia aggiornato
-            await new Promise(resolve => setTimeout(resolve, 0))
-
-            console.log('Dopo initAuth - Utente attuale:', getters.user.value)
-            console.log('Autenticato:', getters.isAuthenticated.value)
-
             // Carica dati dall'API se possibile
             await getUserData()
+            
+            // Carica statistiche utente
+            await getStats()
 
-            // Calcola statistiche
-            daysSinceJoined.value = calculateDaysSinceJoined()
-            console.log('Giorni dall\'iscrizione:', daysSinceJoined.value)
+            console.log('Profile.vue completamente inizializzato')
         })
 
         return {
             user,
             userInitials,
             dreamCount,
-            daysSinceJoined,
-            averageDreamsPerWeek,
+            thisMonth,
+            thisWeek,
+            lucid,
             showLogoutModal,
             getUserData,
+            getStats,
             formatDate,
             editProfile,
             changePassword,

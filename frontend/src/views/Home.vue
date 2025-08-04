@@ -5,6 +5,7 @@
             <div class="hero-background">
                 <div class="floating-dreams"></div>
                 <div class="aurora"></div>
+                <div class="falling-stars"></div>
             </div>
             <div class="hero-content">
                 <div class="hero-icon">🌙</div>
@@ -101,6 +102,10 @@
                             <span class="benefit-icon">🛡️</span>
                             <span>Tutela la tua privacy con un sistema sicuro</span>
                         </div>
+                        <div class="benefit-item">
+                            <span class="benefit-icon">🔬</span>
+                            <span>Approccio scientifico ai sogni</span>
+                        </div>
                     </div>
                 </div>
                 <div class="info-visual">
@@ -111,96 +116,31 @@
             </div>
         </section>
 
-        <!-- About Section -->
-        <section class="about-section">
-            <div class="about-content">
-                <h2>👥 Chi siamo</h2>
-                <p>
-                    Siamo un piccolo team appassionato di psicologia e tecnologia, con l'obiettivo di aiutare le persone
-                    a esplorare il proprio mondo onirico in modo semplice e sicuro.
-                </p>
-                <div class="team-values">
-                    <div class="value-item">
-                        <span class="value-icon">💜</span>
-                        <span>Passione per i sogni</span>
-                    </div>
-                    <div class="value-item">
-                        <span class="value-icon">🔬</span>
-                        <span>Approccio scientifico</span>
-                    </div>
-                    <div class="value-item">
-                        <span class="value-icon">🛡️</span>
-                        <span>Privacy first</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <!-- Call to Action Footer -->
         <section class="cta-footer" v-if="!isAuthenticated">
             <div class="cta-content">
                 <h2>🚀 Pronto a iniziare il tuo viaggio nei sogni?</h2>
                 <p>Unisciti a migliaia di persone che stanno già esplorando il loro mondo onirico</p>
-                <router-link to="/register" class="cta-button primary large">
-                    ✨ Registrati gratuitamente
-                </router-link>
+                <div class="cta-actions">
+                    <router-link to="/register" class="cta-button primary large">
+                        ✨ Registrati gratuitamente
+                    </router-link>
+                    
+                    <!-- PayPal Donate Button Styled -->
+                    <div class="support-section">
+                        <p class="support-text">Ti piace DreamKeeper? Sostienici!</p>
+                        <form action="https://www.paypal.com/donate" method="post" target="_top" class="paypal-form">
+                            <input type="hidden" name="hosted_button_id" value="QEPY9GYEUQH4A" />
+                            <button type="submit" class="paypal-button">
+                                <span class="paypal-icon">💝</span>
+                                <span class="paypal-text">Sostieni il progetto</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <!-- Stats Section for logged users -->
-        <section class="stats-section" v-else>
-            <div class="stats-content">
-                <h2>📊 Il tuo mondo onirico</h2>
-                <p>Continua a esplorare e documentare i tuoi sogni</p>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">🌙</div>
-                        <div class="stat-number">{{ dreamStats.total || 0 }}</div>
-                        <div class="stat-label">Sogni Salvati</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📅</div>
-                        <div class="stat-number">{{ dreamStats.thisMonth || 0 }}</div>
-                        <div class="stat-label">Questo Mese</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">✨</div>
-                        <div class="stat-number">{{ dreamStats.lucid || 0 }}</div>
-                        <div class="stat-label">Sogni Lucidi</div>
-                    </div>
-                </div>
-                <router-link to="/my-dreams" class="cta-button primary large">
-                    📖 Vai ai Tuoi Sogni
-                </router-link>
-            </div>
-        </section>
-
-        <!-- Quick Add Dream Modal -->
-        <div class="modal-overlay" v-if="showQuickModal" @click="closeQuickModal">
-            <div class="quick-modal" @click.stop>
-                <div class="modal-header">
-                    <h3>⚡ Aggiungi Sogno Veloce</h3>
-                    <button class="close-btn" @click="closeQuickModal">&times;</button>
-                </div>
-                <form @submit.prevent="quickSaveDream" class="quick-form">
-                    <div class="form-group">
-                        <input type="text" v-model="quickDream.title" placeholder="Titolo del sogno..." required>
-                    </div>
-                    <div class="form-group">
-                        <textarea v-model="quickDream.content" placeholder="Racconta velocemente il tuo sogno..."
-                            required rows="4"></textarea>
-                    </div>
-                    <div class="quick-actions">
-                        <button type="button" class="btn-cancel" @click="closeQuickModal">
-                            Annulla
-                        </button>
-                        <button type="submit" class="btn-save" :disabled="submitting">
-                            {{ submitting ? 'Salvando...' : '💾 Salva' }}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
     </div>
 </template>
 
@@ -315,7 +255,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
     overflow: hidden;
 }
 
@@ -325,7 +265,7 @@ export default {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+    background: radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
     animation: subtleFloat 8s ease-in-out infinite;
 }
 
@@ -380,6 +320,154 @@ export default {
     background-repeat: repeat;
     background-size: 200px 150px;
     animation: slowFloat 15s infinite linear;
+}
+
+.falling-stars {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.falling-stars::before,
+.falling-stars::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    box-shadow:
+        0 0 6px rgba(255, 255, 255, 0.8),
+        0 0 12px rgba(255, 255, 255, 0.6),
+        0 0 18px rgba(255, 255, 255, 0.4);
+}
+
+.falling-stars::before {
+    left: 15%;
+    animation: fallingStar1 7s linear infinite;
+    animation-delay: 0s;
+}
+
+.falling-stars::after {
+    left: 75%;
+    animation: fallingStar2 9s linear infinite;
+    animation-delay: 2s;
+}
+
+/* Aggiungiamo più stelle usando pseudo-elementi aggiuntivi */
+.hero-background::before,
+.hero-background::after {
+    content: '';
+    position: absolute;
+    width: 1.5px;
+    height: 1.5px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    box-shadow:
+        0 0 4px rgba(255, 255, 255, 0.6),
+        0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+.hero-background::before {
+    left: 35%;
+    animation: fallingStar3 11s linear infinite;
+    animation-delay: 4s;
+}
+
+.hero-background::after {
+    left: 60%;
+    animation: fallingStar4 6s linear infinite;
+    animation-delay: 7s;
+}
+
+/* Animazioni casuali diverse per ogni stella */
+@keyframes fallingStar1 {
+    0% {
+        top: -10px;
+        opacity: 0;
+        transform: translateX(0px);
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        top: 100vh;
+        opacity: 0;
+        transform: translateX(80px);
+    }
+}
+
+@keyframes fallingStar2 {
+    0% {
+        top: -10px;
+        opacity: 0;
+        transform: translateX(0px);
+    }
+
+    15% {
+        opacity: 1;
+    }
+
+    85% {
+        opacity: 1;
+    }
+
+    100% {
+        top: 100vh;
+        opacity: 0;
+        transform: translateX(-60px);
+    }
+}
+
+@keyframes fallingStar3 {
+    0% {
+        top: -10px;
+        opacity: 0;
+        transform: translateX(0px);
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 1;
+    }
+
+    100% {
+        top: 100vh;
+        opacity: 0;
+        transform: translateX(120px);
+    }
+}
+
+@keyframes fallingStar4 {
+    0% {
+        top: -10px;
+        opacity: 0;
+        transform: translateX(0px);
+    }
+
+    25% {
+        opacity: 1;
+    }
+
+    75% {
+        opacity: 1;
+    }
+
+    100% {
+        top: 100vh;
+        opacity: 0;
+        transform: translateX(-40px);
+    }
 }
 
 @keyframes slowFloat {
@@ -668,51 +756,7 @@ export default {
     }
 }
 
-/* About Section */
-.about-section {
-    padding: 6rem 2rem;
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
-}
-
-.about-content {
-    max-width: 800px;
-    margin: 0 auto;
-    text-align: center;
-}
-
-.about-content h2 {
-    font-size: 2.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.about-content p {
-    font-size: 1.2rem;
-    margin-bottom: 2.5rem;
-    opacity: 0.95;
-}
-
-.team-values {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-}
-
-.value-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-}
-
-.value-icon {
-    font-size: 2rem;
-}
+/* PayPal Support Section */
 
 /* CTA Footer */
 .cta-footer {
@@ -731,6 +775,78 @@ export default {
     font-size: 1.2rem;
     margin-bottom: 2.5rem;
     opacity: 0.9;
+}
+
+.cta-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+/* PayPal Support Section */
+.support-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.support-text {
+    font-size: 1rem;
+    opacity: 0.8;
+    margin: 0;
+}
+
+.paypal-form {
+    margin: 0;
+    padding: 0;
+}
+
+.paypal-button {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1.8rem;
+    border: none;
+    border-radius: 25px;
+    background: linear-gradient(135deg, #0070ba 0%, #003087 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 112, 186, 0.3);
+    font-family: inherit;
+}
+
+.paypal-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 112, 186, 0.4);
+    background: linear-gradient(135deg, #0079c1 0%, #003f96 100%);
+}
+
+.paypal-button:active {
+    transform: translateY(0);
+}
+
+.paypal-icon {
+    font-size: 1.2rem;
+    animation: heartbeat 2s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.paypal-text {
+    font-size: 1rem;
+    letter-spacing: 0.5px;
 }
 
 /* Stats Section */
@@ -1018,9 +1134,17 @@ export default {
         gap: 1.5rem;
     }
 
+    .cta-actions {
+        gap: 1.5rem;
+    }
+
+    .paypal-button {
+        padding: 0.7rem 1.5rem;
+        font-size: 0.9rem;
+    }
+
     .section-header h2,
     .info-text h2,
-    .about-content h2,
     .cta-content h2,
     .stats-content h2 {
         font-size: 2.2rem;
@@ -1028,7 +1152,6 @@ export default {
 
     .features-section,
     .info-section,
-    .about-section,
     .cta-footer,
     .stats-section {
         padding: 5rem 1.5rem;
@@ -1134,7 +1257,8 @@ export default {
 /* Performance optimizations */
 .floating-dreams,
 .aurora,
-.hero-background {
+.hero-background,
+.falling-stars {
     will-change: transform;
 }
 

@@ -108,3 +108,22 @@ def register():
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': f'Errore interno'}), 500
+
+@auth_bp.route('/stats', methods=['GET'])
+@jwt_required()
+def get_user_stats():
+    """Get user statistics."""
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.find_by_id(user_id)
+        print(f"User ID: {user_id}, User: {user}")
+        
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+
+        stats = user.get_stats()
+        return jsonify(stats), 200
+        
+    except Exception as e:
+        print(f"Errore nel recupero statistiche: {e}")
+        return jsonify({'message': 'Errore interno del server'}), 500

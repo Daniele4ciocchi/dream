@@ -21,13 +21,18 @@ def create_app(config_name=None):
     if config_name is None:
         config_name = os.getenv('FLASK_ENV', 'development')
     
-    app.config.from_object(config[config_name])
+    config_obj = config[config_name]
+    app.config.from_object(config_obj)
     
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
-    cors.init_app(app, origins=app.config['CORS_ORIGINS'])
+    
+    # CORS dinamico - ottieni gli origins dalla configurazione
+    cors_origins = config_obj.get_cors_origins()
+    print(f"🌐 CORS Origins configurati: {cors_origins}")
+    cors.init_app(app, origins=cors_origins)
     ma.init_app(app)
     
     # Register blueprints
