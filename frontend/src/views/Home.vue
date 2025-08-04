@@ -207,15 +207,12 @@ export default {
 
                 closeQuickModal()
 
-                // Show success message
-                alert('Sogno salvato con successo! 🌟')
-
                 // Redirect to dreams page
                 router.push('/my-dreams')
 
             } catch (error) {
                 console.error('Errore nel salvare il sogno:', error)
-                alert('Errore nel salvare il sogno. Riprova.')
+                // Gestione silente dell'errore
             } finally {
                 submitting.value = false
             }

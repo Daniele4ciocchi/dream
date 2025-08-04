@@ -113,5 +113,10 @@ class User(db.Model):
             'updated_at': self.updated_at.isoformat()
         }
     
+    def getUsersList(self):
+        """Get a list of users."""
+        users = User.query.all()
+        return [user.to_dict() for user in users]
+    
     def __repr__(self):
         return f'<User {self.username}>'

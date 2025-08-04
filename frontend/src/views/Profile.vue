@@ -107,7 +107,6 @@ export default {
         // Computed properties
         const user = computed(() => {
             const currentUser = store.user
-            console.log('User computed:', currentUser)
 
             // Se non c'è utente autenticato, usa dati demo
             if (!currentUser) {
@@ -132,23 +131,17 @@ export default {
 
         const getUserData = async () => {
             try {
-                console.log('Tentativo di chiamata API /me...')
-
                 // Chiamata API per ottenere i dati dell'utente
                 const response = await api.get('/api/auth/me')
 
-                console.log('Dati ricevuti:', response.data)
-
                 if (response.data.user) {
                     store.user = response.data.user
-                    console.log('Dati utente aggiornati nello store')
                 }
             } catch (error) {
                 console.error('Errore nel recupero dei dati utente:', error);
                 
                 // Se è un errore 401, l'utente non è più autenticato
                 if (error.response?.status === 401) {
-                    console.log('Token scaduto o non valido, effettuo logout')
                     authLogout()
                 }
             }
@@ -156,9 +149,7 @@ export default {
 
         const getStats = async () => {
             try {
-                console.log('Caricamento statistiche utente...')
                 const response = await api.get('api/auth/stats')
-                console.log('Statistiche ricevute:', response.data)
 
                 // Aggiorna le statistiche
                 dreamCount.value = response.data.total || 0
@@ -186,17 +177,14 @@ export default {
 
         const editProfile = () => {
             // TODO: Implementare modifica profilo
-            alert('Funzionalità in arrivo!')
         }
 
         const changePassword = () => {
             // TODO: Implementare cambio password
-            alert('Funzionalità in arrivo!')
         }
 
         const exportData = () => {
             // TODO: Implementare esportazione dati
-            alert('Funzionalità in arrivo!')
         }
 
         const confirmLogout = () => {
@@ -215,15 +203,11 @@ export default {
 
         // Lifecycle
         onMounted(async () => {
-            console.log('Profile.vue montato')
-
             // Carica dati dall'API se possibile
             await getUserData()
             
             // Carica statistiche utente
             await getStats()
-
-            console.log('Profile.vue completamente inizializzato')
         })
 
         return {

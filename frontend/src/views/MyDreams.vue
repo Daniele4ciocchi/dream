@@ -11,9 +11,16 @@
     <div class="dreams-content" v-if="dreams.length > 0">
       <ul class="dream-list">
         <li class="dream-item" v-for="dream in dreams" :key="dream.id">
-          <h3>{{ dream.title }}</h3>
+          <div class="dream-header">
+            <h3>{{ dream.title }}</h3>
+            <div class="dream-date">{{ formatDate(dream.date_dreamed) }}</div>
+          </div>
           <p>{{ dream.content }}</p>
-          <small>{{ dream.date_dreamed }} - {{ dream.mood || 'Nessun mood' }}</small>
+          <div class="dream-meta">
+            <span v-if="dream.mood" class="dream-mood">{{ getMoodEmoji(dream.mood) }} {{ getMoodLabel(dream.mood) }}</span>
+            <span v-if="dream.is_lucid" class="lucid-badge">🌟 Sogno Lucido</span>
+            <span v-if="dream.is_private" class="private-badge">🔒 Privato</span>
+          </div>
           <div class="dream-actions">
             <button class="btn btn-edit" @click="openEditDreamModal(dream)">
               ✏️ Modifica
@@ -180,16 +187,19 @@ export default {
     const getDreams = async () => {
       try {
         const response = await api.get('/api/dreams');
-        console.log('Risposta completa dal backend:', response.data);
         
         // Il backend restituisce {dreams: [...], pagination: {...}}
         if (response.data && response.data.dreams) {
-          dreams.value = response.data.dreams;
+          // Ordina i sogni per data, dal più recente al più vecchio
+          dreams.value = response.data.dreams.sort((a, b) => {
+            const dateA = new Date(a.date_dreamed);
+            const dateB = new Date(b.date_dreamed);
+            return dateB - dateA; // Ordine decrescente (più recente prima)
+          });
         } else {
           dreams.value = [];
         }
         
-        console.log('Sogni recuperati:', dreams.value);
       } catch (error) {
         console.error('Errore nel recupero dei sogni:', error);
         console.error('Status:', error.response?.status);
@@ -198,7 +208,6 @@ export default {
         
         // Se è un errore 401, l'utente non è più autenticato
         if (error.response?.status === 401) {
-          console.log('Token scaduto o non valido, effettuo logout');
           logout();
           router.push('/login');
         }
@@ -210,7 +219,6 @@ export default {
 
       try {
         await api.delete(`/api/dreams/${dreamId}`);
-        console.log(`Sogno ${dreamId} eliminato con successo`);
         
         // Ricarica la lista dei sogni
         await getDreams();
@@ -227,6 +235,51 @@ export default {
           router.push('/login');
         }
       }
+    };
+
+    // Funzione per formattare la data in italiano
+    const formatDate = (dateString) => {
+      try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('it-IT', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+      } catch (error) {
+        return dateString;
+      }
+    };
+
+    // Funzione per ottenere l'emoji del mood
+    const getMoodEmoji = (mood) => {
+      const moodEmojis = {
+        'happy': '😊',
+        'scared': '😨',
+        'mysterious': '🔮',
+        'exciting': '🎉',
+        'peaceful': '😌',
+        'weird': '🤪',
+        'sad': '😢',
+        'adventurous': '🗺️'
+      };
+      return moodEmojis[mood] || '😊';
+    };
+
+    // Funzione per ottenere l'etichetta del mood
+    const getMoodLabel = (mood) => {
+      const moodLabels = {
+        'happy': 'Felice',
+        'scared': 'Spaventato',
+        'mysterious': 'Misterioso',
+        'exciting': 'Eccitante',
+        'peaceful': 'Sereno',
+        'weird': 'Strano',
+        'sad': 'Triste',
+        'adventurous': 'Avventuroso'
+      };
+      return moodLabels[mood] || mood;
     };
 
     const openAddDreamModal = () => {
@@ -284,20 +337,13 @@ export default {
           tags: dreamForm.value.tags ? dreamForm.value.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : []
         };
 
-        console.log('Invio dati sogno:', dreamData);
-        console.log('Modalità:', isEditMode.value ? 'Modifica' : 'Creazione');
-
         let response;
         if (isEditMode.value) {
           // Aggiorna sogno esistente
           response = await api.put(`/api/dreams/${editingDreamId.value}`, dreamData);
-          console.log('Sogno aggiornato:', response.data);
-          alert('Sogno aggiornato con successo! ✨');
         } else {
           // Crea nuovo sogno
           response = await api.post('/api/dreams', dreamData);
-          console.log('Sogno creato:', response.data);
-          alert('Sogno salvato con successo! 🌟');
         }
         
         // Chiudi il modal
@@ -319,8 +365,6 @@ export default {
         } else if (error.response?.data?.errors) {
           errorMessage = 'Errori di validazione: ' + JSON.stringify(error.response.data.errors);
         }
-        
-        alert(errorMessage);
         
         // Se è un errore 401, logout
         if (error.response?.status === 401) {
@@ -346,6 +390,9 @@ export default {
       editingDreamId,
       getDreams,
       deleteDream,
+      formatDate,
+      getMoodEmoji,
+      getMoodLabel,
       openAddDreamModal,
       openEditDreamModal,
       closeAddDreamModal,
@@ -362,6 +409,8 @@ export default {
   margin: 0 auto;
   padding: 2rem;
   flex: 1;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .dreams-header {
@@ -404,10 +453,11 @@ export default {
   padding: 3rem;
   border: 2px solid #4b2e83;
   min-height: 400px;
-  min-width: 600px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .empty-state {
@@ -459,9 +509,11 @@ export default {
   background: white;
   border-radius: 12px;
   padding: 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   border: 1px solid #e0e0e0;
   transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .dream-item:hover {
@@ -469,22 +521,65 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.dream-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
 .dream-item h3 {
   color: #4b2e83;
-  margin-bottom: 0.5rem;
-  font-size: 1.2rem;
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  flex: 1;
+}
+
+.dream-date {
+  background: linear-gradient(135deg, #4b2e83 0%, #6c47a3 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+  margin-left: 1rem;
 }
 
 .dream-item p {
   color: #666;
   line-height: 1.6;
+  margin-bottom: 1rem;
 }
 
-.dream-item small {
-  color: #999;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-  display: block;
+.dream-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.dream-mood, .lucid-badge, .private-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.dream-mood {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.lucid-badge {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.private-badge {
+  background: #fce4ec;
+  color: #c2185b;
 }
 
 .dream-actions {
@@ -492,6 +587,7 @@ export default {
   gap: 0.5rem;
   margin-top: 1rem;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .btn-edit {
@@ -695,26 +791,247 @@ export default {
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .dreams-container {
+    padding: 1.5rem;
+  }
+  
+  .dreams-content {
+    padding: 2rem;
+    min-width: auto;
+  }
+}
+
 @media (max-width: 768px) {
-  .modal-overlay {
+  .dreams-container {
     padding: 1rem;
+  }
+
+  .dreams-header h1 {
+    font-size: 2rem;
+  }
+
+  .dreams-header p {
+    font-size: 1rem;
+  }
+
+  .dreams-content {
+    padding: 1.5rem;
+    min-height: 300px;
+    border-radius: 12px;
+  }
+
+  .dream-item {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+  }
+
+  .dream-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .dream-item h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .dream-date {
+    margin-left: 0;
+    align-self: flex-start;
+    font-size: 0.7rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .dream-meta {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .dream-mood, .lucid-badge, .private-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    align-self: flex-start;
+  }
+
+  .dream-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .btn-edit, .btn-danger {
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 0.8rem;
+  }
+
+  .add-dream-btn {
+    padding: 10px 20px;
+    font-size: 1rem;
+  }
+
+  .empty-state {
+    padding: 1rem;
+  }
+
+  .empty-icon {
+    font-size: 3rem;
+  }
+
+  .empty-state h3 {
+    font-size: 1.2rem;
+  }
+
+  .empty-state p {
+    font-size: 1rem;
+    max-width: 100%;
+  }
+
+  /* Modal responsive */
+  .modal-overlay {
+    padding: 0.5rem;
   }
   
   .modal-content {
     max-height: 95vh;
+    border-radius: 12px;
+    margin: 0;
   }
   
-  .modal-header,
+  .modal-header {
+    padding: 1.5rem 1.5rem 1rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1.2rem;
+  }
+  
   .dream-form {
     padding: 1.5rem;
   }
   
   .form-row {
     grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
   
   .form-actions {
     flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    padding: 10px;
+    font-size: 16px; /* Previene zoom su iOS */
+  }
+}
+
+@media (max-width: 480px) {
+  .dreams-container {
+    padding: 0.5rem;
+  }
+
+  .dreams-header {
+    margin-bottom: 2rem;
+  }
+
+  .dreams-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .dreams-header p {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .dreams-content {
+    padding: 1rem;
+    border-radius: 8px;
+    border-width: 1px;
+  }
+
+  .dream-item {
+    padding: 0.8rem;
+    border-radius: 6px;
+  }
+
+  .dream-item h3 {
+    font-size: 1rem;
+  }
+
+  .dream-item p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .dream-date {
+    font-size: 0.6rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .add-dream-btn {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    border-radius: 6px;
+  }
+
+  .btn-edit, .btn-danger {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+  }
+
+  /* Modal extra small screens */
+  .modal-overlay {
+    padding: 0.25rem;
+  }
+
+  .modal-content {
+    border-radius: 8px;
+  }
+
+  .modal-header {
+    padding: 1rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .dream-form {
+    padding: 1rem;
+  }
+
+  .form-group label {
+    font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    padding: 8px;
+    font-size: 16px;
+    border-radius: 6px;
+  }
+
+  .form-group small {
+    font-size: 0.7rem;
+  }
+
+  .checkbox-label {
+    font-size: 0.8rem;
+  }
+
+  .close-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 1.5rem;
   }
 }
 </style>

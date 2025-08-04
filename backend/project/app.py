@@ -9,7 +9,7 @@ import os
 
 from config import config
 from project import db, jwt, cors, migrate, ma
-from project.routes import auth_bp, dreams_bp
+from project.routes import auth_bp, dreams_bp, users_bp
 
 
 def create_app(config_name=None):
@@ -38,7 +38,8 @@ def create_app(config_name=None):
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(dreams_bp)
-    
+    app.register_blueprint(users_bp)
+
     # CORS headers
     @app.after_request
     def after_request(response):
